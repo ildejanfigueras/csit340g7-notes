@@ -8,6 +8,8 @@ app.use(cors({
   origin: 'http://localhost:5173'
 }))
 
+app.use(express.json())
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SECRET_KEY,
@@ -25,6 +27,22 @@ app.get('/notes', async (req, res) => {
   }
 
   res.json(data)
+})
+
+app.post('/notes', async (req, res) => {
+  const { title, body } = req.body
+
+  const { data, error } = await supabase
+    .from('notes')
+    .insert({ title, body })
+    .select()
+    .single()
+
+  if (error) {
+    return res.status(500).json({ error: error.message })
+  }
+
+  res.status(201).json(data)
 })
 
 app.listen(3000, (error) => {
